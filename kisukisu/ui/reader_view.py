@@ -284,7 +284,7 @@ class PresenterReaderWindow(ctk.CTkToplevel):
 
         self.txt = tk.Text(
             self.body, wrap="word", bd=0, highlightthickness=0, relief="flat", cursor="arrow",
-            takefocus=0, undo=False, yscrollincrement=1, insertwidth=0, padx=24, pady=0,
+            takefocus=0, undo=False, insertwidth=0, padx=24, pady=0,
             yscrollcommand=self._on_yscroll)
         self.txt.grid(row=0, column=0, sticky="nsew")
         self.scrollbar.configure(command=self.txt.yview)
