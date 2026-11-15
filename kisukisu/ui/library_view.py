@@ -404,11 +404,8 @@ class LibraryWindow(ctk.CTk):
             self.reader_window = None
             messagebox.showerror("Could not open the reader", f"{type(e).__name__}: {e}", parent=self)
             return
-        if config.get("minimize_library_on_present", False):
-            self._minimized_for_reader = True
-            self.iconify()
-        else:
-            self.toast("Reader opened — Space scrolls, M makes it compact", "info", 2600)
+        self._minimized_for_reader = True
+        self.withdraw()
 
     _launch_presenter = launch_presenter          # alias kept for the onboarding flow
 

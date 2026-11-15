@@ -98,6 +98,7 @@ def set_taskbar_hidden(hwnd, hidden=True) -> bool:
         else:
             ex = (ex & ~WS_EX_TOOLWINDOW) | WS_EX_APPWINDOW
         u.SetWindowLongW(hwnd, GWL_EXSTYLE, ex)
+        u.SetWindowPos(hwnd, 0, 0, 0, 0, 0, 0x0020 | 0x0002 | 0x0001 | 0x0004 | 0x0010)
         return True
     except Exception:
         return False

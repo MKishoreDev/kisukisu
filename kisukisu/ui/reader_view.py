@@ -871,6 +871,11 @@ class PresenterReaderWindow(ctk.CTkToplevel):
             return
         hidden = bool(config.get("hide_from_taskbar", False))
         try:
+            if self.parent_app and self.parent_app.winfo_exists():
+                if hidden:
+                    self.parent_app.withdraw()
+                else:
+                    self.parent_app.deiconify()
             self.withdraw()
             self.update_idletasks()
             ws.set_taskbar_hidden(ws.top_level_hwnd(self.winfo_id()), hidden)
