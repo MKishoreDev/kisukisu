@@ -1,0 +1,101 @@
+name: CI, Build & Release
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  test-windows:
+    name: Tests (Windows, Python ${{ matrix.python-version }})
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install --upgrade pip && pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -p "test_*.py" -v
+
+  test-linux:
+    name: Tests (Linux + xvfb)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y python3-tk xvfb
+      - run: python -m pip install --upgrade pip && pip install -r requirements.txt
+      - run: xvfb-run -a python -m unittest discover -s tests -p "test_*.py" -v
+
+  test-macos:
+    name: Tests (macOS, Python 3.12)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip && pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -p "test_*.py" -v
+
+  build-and-release:
+    name: Build Standalone Executable & Package Release
+    needs: [test-windows, test-linux, test-macos]
+    runs-on: windows-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip && pip install -r requirements.txt pyinstaller build
+      - name: Build Windows Executable (.exe)
+        shell: bash
+        run: |
+          python -m PyInstaller --noconsole --onefile --name Kisukisu --clean \
+            --icon assets/logo.ico \
+            --add-data "assets;assets" \
+            --collect-all customtkinter \
+            run_kisukisu.py
+      - name: Build PyPI Distribution (sdist & wheel)
+        shell: bash
+        run: |
+          python -m build
+      - name: Archive Windows Binary
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/Kisukisu.exe -DestinationPath dist/Kisukisu-Windows-x64.zip -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Kisukisu-Windows-x64
+          path: dist/Kisukisu.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Kisukisu-PyPI-Packages
+          path: dist/*.whl
+      - name: Automatic GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        with:
+          tag_name: v1.0.0
+          name: "Kisukisu v1.0.0 — Privacy-First Desktop Presenter Companion"
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+          files: |
+            dist/Kisukisu.exe
+            dist/Kisukisu-Windows-x64.zip
+            dist/*.whl
+            dist/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
