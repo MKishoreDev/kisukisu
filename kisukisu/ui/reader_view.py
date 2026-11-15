@@ -291,8 +291,8 @@ class PresenterReaderWindow(ctk.CTkToplevel):
         # Remove the default Text key/mouse behaviour — we own every key and wheel event.
         self.txt.bindtags((str(self.txt), str(self.winfo_toplevel()), "all"))
         self.txt.bind("<MouseWheel>", self._on_wheel)
-        self.txt.bind("<Button-4>", lambda e: self._scroll_px(-self._line_px() * 1.5))
-        self.txt.bind("<Button-5>", lambda e: self._scroll_px(self._line_px() * 1.5))
+        self.txt.bind("<Button-4>", lambda e: self.scroll_up())
+        self.txt.bind("<Button-5>", lambda e: self.scroll_down())
         self.txt.bind("<Button-1>", lambda e: self.focus_set())
         self.txt.bind("<Double-Button-1>", lambda e: self.toggle_play())
         self._configure_tags()
@@ -522,20 +522,22 @@ class PresenterReaderWindow(ctk.CTkToplevel):
         self._update_clock()
         self.toast.show("Timer reset", "info", 1400)
 
-    def _scroll_px(self, px):
-        px = int(px)
-        if px:
-            self.txt.yview_scroll(px, "units")
+    def _scroll_px(self, lines=1):
+        lines = int(lines)
+        if lines:
+            self.txt.yview_scroll(lines, "units")
         return "break"
 
     def _on_wheel(self, e):
         step = -e.delta / 120.0 if sys.platform != "darwin" else -float(e.delta)
-        return self._scroll_px(step * self._line_px() * 1.5)
+        lines = int(round(step)) or (1 if step > 0 else -1)
+        self.txt.yview_scroll(lines, "units")
+        return "break"
 
     # ═════════════════════════ playback ══════════════════════════
     def _px_per_sec(self) -> float:
         level = int(config.get("auto_scroll_speed", 4))
-        return (0.08 + level * 0.07) * self._line_px()
+        return 0.2 + level * 0.25
 
     def toggle_play(self):
         self.pause() if self.playing else self.play()
@@ -644,16 +646,20 @@ class PresenterReaderWindow(ctk.CTkToplevel):
         return "break"
 
     def page_down(self):
-        return self._scroll_px(self.txt.winfo_height() * 0.85)
+        self.txt.yview_scroll(1, "pages")
+        return "break"
 
     def page_up(self):
-        return self._scroll_px(-self.txt.winfo_height() * 0.85)
+        self.txt.yview_scroll(-1, "pages")
+        return "break"
 
     def scroll_down(self):
-        return self._scroll_px(self._line_px() * 1.5)
+        self.txt.yview_scroll(1, "units")
+        return "break"
 
     def scroll_up(self):
-        return self._scroll_px(-self._line_px() * 1.5)
+        self.txt.yview_scroll(-1, "units")
+        return "break"
 
     # ═════════════════════════ appearance ════════════════════════
     def font_up(self):
