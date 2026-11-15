@@ -76,6 +76,10 @@ class LibraryWindow(ctk.CTk):
         self.bind("<Configure>", self._on_configure, add="+")
         self.after(250, self._poll_tray)
         self.deiconify()
+        self.lift()
+        self.attributes("-topmost", True)
+        self.after(150, lambda: self.attributes("-topmost", False))
+        self.focus_force()
         self.after(80, lambda: ws.set_dark_titlebar(ws.top_level_hwnd(self.winfo_id()), self.theme.dark))
 
     # ═════════════════════════ window / geometry ═════════════════
