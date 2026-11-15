@@ -154,6 +154,9 @@ Download pre-compiled binaries directly from the **[Releases](https://github.com
 - **`Kisukisu.exe`**: Zero setup required. Double-click and present.
 - **`Kisukisu-Windows-x64.zip`**: Portable zip archive.
 
+> [!NOTE]
+> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
 ### 2. Install as Python Package (Cross-Platform)
 
 Install directly via `pip` on Windows, macOS, or Linux:
