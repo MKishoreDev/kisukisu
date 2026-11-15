@@ -75,11 +75,11 @@ jobs:
         shell: pwsh
         run: |
           Compress-Archive -Path dist/Kisukisu.exe -DestinationPath dist/Kisukisu-Windows-x64.zip -Force
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Kisukisu-Windows-x64
           path: dist/Kisukisu.exe
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Kisukisu-PyPI-Packages
           path: dist/*.whl
